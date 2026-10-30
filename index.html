@@ -6,7 +6,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f5; }
-    .container { max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; }
+    .container { max-width: 400px; margin: 0 auto; background: white; min-height: 100vh; padding-bottom: 12px; }
     .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; }
     .title { font-size: 24px; font-weight: bold; }
     .caption { padding: 20px; }
@@ -24,6 +24,10 @@
     .menu-btn span { display: block; height: 2px; width: 100%; background: rgba(255,255,255,0.6); border-radius: 1px; }
     .photo-text { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; font-size: 24px; font-weight: normal; text-shadow: 0 2px 8px rgba(0,0,0,0.5); opacity: 0; transition: opacity .3s; pointer-events: none; }
     .photo-menu.open .photo-text { opacity: 1; }
+    button { font: inherit; padding: 10px 18px; border: none; border-radius: 20px; background: #222; color: #fff; cursor: pointer; }
+    dialog { margin: auto; width: 85%; max-width: 340px; padding: 24px; border: none; border-radius: 16px; text-align: center; }
+    dialog::backdrop { background: rgba(0,0,0,0.5); }
+    dialog p { font-size: 20px; font-weight: bold; line-height: 1.55; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -66,10 +70,47 @@
         <div class="caption-head">My Red Flags</div>
         <div class="caption-main">- I'm not subtle <br>- I've only had one long term relationship<br>- I can be unconfortably awkward</div>
       </div>
-      <video src="IMG_9076.mov" autoplay muted loop playsinline></video>
+      <video onclick="this.paused ? this.play() : this.pause()" src="IMG_9076.mov" autoplay muted loop playsinline></video>
     </div>
+    <button onclick="quiz(0)" style="display:block;margin:20px auto">Take the quiz</button>
   </div>
+  <dialog id="q"><button onclick="q.close()" style="position:absolute;top:8px;left:8px;padding:4px 10px">✕</button><p id="qt" style="white-space:pre-line"></p><span id="yn"><button onclick="quiz(1)">Yes</button> <button onclick="quiz(-1)">No</button></span></dialog>
   <script>
+    let n = 0;
+    function quiz(a) {
+      n = a < 0 ? 4 : a ? n + 1 : 0;
+      qt.textContent = n > 3 ? 'Thank you for taking the time to look at this! I have a few things I\'m looking for and unfortunatly that puts you out of the running. But I wish you the best and I\'m sending good vibes your way!' : n > 2 ? '\nThank you for taking the time to look at this, I\'d love to get in touch!\n\nIf interested please email benfischer52@gmail.com with your worst pickup line!' : ['Are you Christian?', 'Are you looking to date for marriage?', 'Do you consider yourself a silly goose?'][n];
+      yn.hidden = n > 2;
+      q.open || (q.showModal(), document.querySelector('video').pause());
+      n === 3 && confetti();
+    }
+    function confetti() {
+      const c = document.createElement('canvas'), x = c.getContext('2d');
+      c.width = innerWidth; c.height = innerHeight;
+      c.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+      q.appendChild(c);
+      const colors = ['#f44336', '#ff9800', '#ffeb3b', '#4caf50', '#2196f3', '#e91e63'];
+      const bits = Array.from({ length: 150 }, () => ({
+        x: Math.random() * c.width, y: -Math.random() * c.height * 0.5,
+        w: 6 + Math.random() * 6, h: 10 + Math.random() * 6,
+        vy: 2 + Math.random() * 3, vx: Math.random() * 2 - 1,
+        a: Math.random() * 6.28, va: Math.random() * 0.3 - 0.15,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      }));
+      const end = Date.now() + 5000;
+      (function frame() {
+        x.clearRect(0, 0, c.width, c.height);
+        x.globalAlpha = Math.min(1, (end - Date.now()) / 1500);
+        bits.forEach(b => {
+          b.x += b.vx; b.y += b.vy; b.a += b.va;
+          x.save(); x.translate(b.x, b.y); x.rotate(b.a);
+          x.fillStyle = b.color; x.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+          x.restore();
+        });
+        Date.now() < end && q.open ? requestAnimationFrame(frame) : c.remove();
+      })();
+    }
+    q.onclose = () => document.querySelector('video').play();
     document.querySelectorAll('.menu-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const open = btn.parentElement.classList.toggle('open');
