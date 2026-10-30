@@ -28,6 +28,7 @@
     dialog { margin: auto; width: 85%; max-width: 340px; padding: 24px; border: none; border-radius: 16px; text-align: center; }
     dialog::backdrop { background: rgba(0,0,0,0.5); }
     dialog p { font-size: 20px; font-weight: bold; line-height: 1.55; margin-bottom: 20px; }
+    dialog select { font: inherit; font-size: 16px; font-weight: normal; padding: 6px 30px 6px 14px; text-align: left; margin-top: 6px; border: none; border-radius: 20px; background: #222 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; color: #fff; cursor: pointer; -webkit-appearance: none; appearance: none; }
   </style>
 </head>
 <body>
@@ -79,7 +80,22 @@
     let n = 0;
     function quiz(a) {
       n = a < 0 ? 4 : a ? n + 1 : 0;
-      qt.textContent = n > 3 ? 'Thank you for taking the time to look at this! I have a few things I\'m looking for and unfortunatly that puts you out of the running. But I wish you the best and I\'m sending good vibes your way!' : n > 2 ? '\nThank you for taking the time to look at this, I\'d love to get in touch!\n\nIf interested please email benfischer52@gmail.com with your worst pickup line!' : ['Are you Christian?', 'Are you looking to date for marriage?', 'Do you consider yourself a silly goose?'][n];
+      qt.textContent = n > 3 ? 'Thank you for taking the time to look at this! I have a few things I\'m looking for and unfortunatly that puts you out of the running. But I wish you the best and I\'m sending good vibes your way!' : n > 2 ? '\nThank you for taking the time to look at this, I\'d love to get in touch!\n\nIf interested please email benfischer52@gmail.com with your ' : ['Are you Christian?', 'Are you looking to date for marriage?', 'Do you consider yourself a silly goose?'][n];
+      if (n === 3) {
+        const s = document.createElement('select');
+        s.innerHTML = '<option>worst pickup line</option><option>best dinosaur impression</option><option>most embarasing story</option><option>green, beige, and red flags</option>';
+        qt.append(s);
+        const fit = () => {
+          const m = s.cloneNode();
+          m.innerHTML = '<option>' + s.value + '</option>';
+          m.style.cssText = 'position:absolute;visibility:hidden;width:auto';
+          qt.append(m);
+          s.style.width = m.offsetWidth + 'px';
+          m.remove();
+        };
+        s.onchange = fit;
+        fit();
+      }
       yn.hidden = n > 2;
       q.open || (q.showModal(), document.querySelector('video').pause());
       n === 3 && confetti();
